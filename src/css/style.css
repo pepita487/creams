@@ -1,0 +1,28 @@
+.product-image-0{
+    width:100%;
+    height: 100%;
+}
+.product-image-1{
+    width:100%;
+    height: 100%;
+}
+.product-image-2{
+    width:100%;
+    height: 100%;
+}
+.product-image-3{
+    width:100%;
+    height: 100%;
+}
+body{
+    background-color: black;
+}
+
+.unselectable {
+    user-drag: none; 
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+  }
