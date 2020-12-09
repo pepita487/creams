@@ -1,4 +1,4 @@
-InteractiveImg = function(image, picQty, centerImg, path, ext) {
+InteractiveImg = function(image, picQty, centerImg, path, ext, iniImg, animSpeed) {
     this.path = path;
     this.coordinates = { x1: 0, y1: 0, x2: 0, y2: 0 };
     this.picQty = picQty;
@@ -10,6 +10,9 @@ InteractiveImg = function(image, picQty, centerImg, path, ext) {
     this.count = centerImg;
     this._picQty = picQty;
     this._ext = ext;
+    this.iniImg = iniImg;
+    this.objAnim = "";
+    this.animSpeed = animSpeed;
 
 
     this.initialize = function() {
@@ -40,7 +43,7 @@ InteractiveImg = function(image, picQty, centerImg, path, ext) {
 
         this._image.addEventListener("mousedown", function(e) {
             interactiveImg.interacting = true;
-            interactiveImg.lastPos = interactiveImg.getMousePos(interactiveImg._image, e);            
+            interactiveImg.lastPos = interactiveImg.getMousePos(interactiveImg._image, e);
             interactiveImg.changeImage();
         }, false);
         this._image.addEventListener("mouseup", function(e) {
@@ -50,7 +53,7 @@ InteractiveImg = function(image, picQty, centerImg, path, ext) {
             interactiveImg.interacting = false;
         }, false);
         this._image.addEventListener("mousemove", function(e) {
-            interactiveImg.mousePos = interactiveImg.getMousePos(interactiveImg._image, e);            
+            interactiveImg.mousePos = interactiveImg.getMousePos(interactiveImg._image, e);
             interactiveImg.changeImage();
         }, false);
     };
@@ -63,6 +66,7 @@ InteractiveImg = function(image, picQty, centerImg, path, ext) {
 
         this._image.addEventListener("touchstart", function(e) {
             interactiveImg.interacting = true;
+            interactiveImg.initialAnimation(true);
             interactiveImg.lastPos = getTouchPos(interactiveImg._image, e);
             let touch = e.touches[0];
             let mouseEvent = new MouseEvent("mousedown", {
@@ -74,6 +78,7 @@ InteractiveImg = function(image, picQty, centerImg, path, ext) {
         }, false);
         interactiveImg._image.addEventListener("touchend", function(e) {
             interactiveImg.interacting = false;
+            interactiveImg.initialAnimation(true);
             let mouseEvent = new MouseEvent("mouseup", {});
             interactiveImg._image.dispatchEvent(mouseEvent);
         }, false);
@@ -84,6 +89,7 @@ InteractiveImg = function(image, picQty, centerImg, path, ext) {
                 clientY: touch.clientY
             });
             interactiveImg._image.dispatchEvent(mouseEvent);
+            interactiveImg.initialAnimation(true);
         }, false);
 
         // Prevent scrolling when touching the canvas
@@ -104,45 +110,68 @@ InteractiveImg = function(image, picQty, centerImg, path, ext) {
         }, false);
     };
 
-    this.initialAnimation = function(){
+    this.initialAnimation = function() {
 
         var interactImg = this;
-            var interval = setInterval(animate, 40);
-            function animate() {
-                interactImg._image.src = interactImg.path + interactImg.count + interactImg._ext;
-                interactImg.count++;
+        this.objAnim = setInterval(animate, this.animSpeed);
+
+        function animate() {
+
+            if (interactImg._image.style.display == "none") {
+                interactImg.count = interactImg.centerImg;
+            } else {
+
+                if (!interactImg.interacting) {
+                    interactImg._image.src = interactImg.path + interactImg.count.toString().padStart(3, "0") + interactImg._ext;
+                    interactImg.count++;
                     if (interactImg.count >= interactImg.picQty) {
-                        interactImg.count = 0;
+                        interactImg.count = interactImg.iniImg;
                     }
-                    if (interactImg.count < 0) {
+                    if (interactImg.count < interactImg.iniImg) {
                         interactImg.count = interactImg.picQty;
                     }
-                    if(interactImg.count == interactImg.centerImg ){
-                        clearInterval(interval);
-                    }
+                }
             }
+
+        }
     }
 
-    this.changeImage = function() {
+
+
+    this.changeImage = async function() {
 
         if (this.interacting) {
             if (this.lastPos.x < this.mousePos.x) {
                 this.count++;
                 if (this.count >= this.picQty) {
-                    this.count = 0;
+                    this.count = this.iniImg;
                 }
-                if (this.count < 0) {
+                if (this.count < this.iniImg) {
                     this.count = this.picQty;
                 }
             } else if (this.lastPos.x > this.mousePos.x) {
                 this.count--;
-                if (this.count < 0) {
+                if (this.count < this.iniImg) {
                     this.count = this.picQty;
                 }
             }
-
         }
-        this._image.src = this.path + this.count + this._ext;
+
+
+
+
+        function delay(delayInms) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve(2);
+                }, delayInms);
+            });
+        }
+
+        await delay(2000);
+        this._image.src = this.path + this.count.toString().padStart(3, "0") + this._ext;
         this.lastPos = this.mousePos;
     }
+
+
 }
